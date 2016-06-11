@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import unittest
 from datetime import datetime, timedelta
 
@@ -32,7 +33,7 @@ class BaseTwitterAPITestCase(unittest.TestCase):
             {
                 '_id': ObjectId('575b5c2bab63bca09af707a5'),
                 'username': 'testuser1',
-                'password': md5('user1-pass').hexdigest(),
+                'password': md5(b'user1-pass').hexdigest(),
                 'first_name': 'Test',
                 'last_name': 'User',
                 'birth_date': '2016-01-30'
@@ -40,12 +41,12 @@ class BaseTwitterAPITestCase(unittest.TestCase):
             {
                 '_id': ObjectId('575b5c2bab63bca09af707a4'),
                 'username': 'testuser2',
-                'password': md5('1234').hexdigest(),
+                'password': md5(b'1234').hexdigest(),
             },
             {
                 '_id': ObjectId('575b5c2bab63bca09af707a3'),
                 'username': 'testuser3',
-                'password': md5('1234').hexdigest(),
+                'password': md5(b'1234').hexdigest(),
             },
         ]
 
@@ -112,3 +113,19 @@ class BaseTwitterAPITestCase(unittest.TestCase):
             }
         ]
         self.db.auth.insert(access_tokens)
+
+        # friendships = [
+        #     {
+        #         'user_id': self.user_1_id,
+        #         "following": [self.user_2_id, self.user_3_id]
+        #     },
+        #     {
+        #         'user_id': self.user_2_id,
+        #         "following": [self.user_1_id]
+        #     },
+        #     {
+        #         'user_id': self.user_3_id,
+        #         "following": []
+        #     },
+        # ]
+        # self.db.friendships.insert(friendships)

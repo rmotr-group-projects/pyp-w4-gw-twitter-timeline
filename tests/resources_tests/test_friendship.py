@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import json
 
 from ..test_base import BaseTwitterAPITestCase
@@ -29,7 +30,7 @@ class CreateFriendshipTestCase(BaseTwitterAPITestCase):
         expected = [{'username': 'testuser1', 'uri': '/profile/testuser1'}]
         self.assertEqual(followers, expected)
 
-    def test_follow_invalid_target_usernamae(self):
+    def test_follow_invalid_target_username(self):
         data = {'username': 'foobar'}
         headers = {'Authorization': '$RMOTR$-U1'}
         response = self.client.post(

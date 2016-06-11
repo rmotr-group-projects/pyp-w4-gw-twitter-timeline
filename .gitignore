@@ -87,3 +87,9 @@ ENV/
 
 # Rope project settings
 .ropeproject
+
+# Virtualenvs
+*-env/
+
+# Dev-created test data
+*test_data.py
