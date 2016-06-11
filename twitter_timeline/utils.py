@@ -4,7 +4,7 @@ import random
 from datetime import datetime
 from functools import wraps
 
-from flask import request, g, abort
+from flask import request, g, abort, Response
 
 JSON_MIME_TYPE = 'application/json'
 
@@ -34,7 +34,7 @@ def auth_only(f):
     def decorated_function(*args, **kwargs):
         # implement your logic here
         if 'Authorization' not in request.headers:
-            return Response('No Authorization field in header',404)
+            return Response('No Authorization field in header',401)
         client_access_token = request.headers['Authorization']
         cursor = g.db.auth.find_one({'access_token': client_access_token})
         if not cursor:

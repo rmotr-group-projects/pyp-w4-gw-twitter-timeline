@@ -54,7 +54,7 @@ def friendship(user_id):
     friend_username = data['username']
     friend_data = g.db.users.find_one({'username': friend_username})
     
-    if not friend_data:
+    if not friend_data: 
         return Response('No user found with username {}'.format(friend_username), 400)
     
     friend_id = friend_data['_id']
@@ -64,6 +64,7 @@ def friendship(user_id):
         return Response('{} cannot follow themself'.format(friend_username), 401)
     
     if request.method == 'POST':
+        # find_one will return None if no match found, but find will return a cursor
         if g.db.friendships.find({'follower_id':user_id,'followed_id':friend_id}).count() > 0:
             msg = '{} is already following {}'.format(user_data['username'], friend_username)
             return Response(msg, 404)
