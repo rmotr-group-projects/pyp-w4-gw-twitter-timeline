@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import json
 
-from pymongo import MongoClient, DESCENDING
+from pymongo import MongoClient
 from bson.objectid import ObjectId
 from flask import abort, Flask, g, request, Response
 
@@ -48,6 +48,10 @@ def friendship(user_id):
     # Get the follower object from the users collection
     follower = g.db.users.find_one({'_id': ObjectId(user_id)})
     
+    # You can't follow yourself.  That's just silly.
+    if followed_user['_id'] == follower['_id']:
+        abort(400)
+    
     # Get the list of users already being followed.  This should be initialized
     #  as a blank list if the 'following' key does not exist.
     follower.setdefault('following', [])
@@ -64,7 +68,7 @@ def friendship(user_id):
         else:
             abort(400)
     
-    if request.method == 'DELETE':
+    elif request.method == 'DELETE':
         # Remove the followed user's id from the follower list if it is already
         #  in it.  If not already following, return a Bad Request response.
         if followed_user['_id'] in following:
@@ -74,11 +78,9 @@ def friendship(user_id):
             abort(400)
         
     # Update the users collection with the new or revised following list
-    result = g.db.users.update_one(
+    g.db.users.update_one(
         {'_id': ObjectId(user_id)},
-        {
-            '$set': {'following': following}
-        }
+        {'$set': {'following': following}}
     )
     
     # If we successfully reach this point, return the appropriate response
@@ -89,26 +91,25 @@ def friendship(user_id):
 @auth_only
 def followers(user_id):
     '''
-    Followers section to return JSON of users following the authenticated user.
+    Returns list of users following the authenticated user.
     '''
-    # This represents the json object we will return
+    # The list of users to be returned
     followers = []
-   
-    # Query for passed user_id in the users collection.
-    for follower in g.db.users.find({ 'following': {'$in' : [ user_id ]}}):
+    
+    # Get all users who have the authenticated user in their 'following' list
+    for follower in g.db.users.find({ 'following': {'$in': [user_id]}}):
         
-        # Assign result to username and setup dictionary to be appended
+        # Format the required follower details properly
         user_name = follower['username']
         follower_details = {
-            "username": str(user_name),
-            "uri": "/profile/" + str(user_name)
+            "username": user_name,
+            "uri": "/profile/{}".format(user_name)
         }
         
-        # Append results to followers list for later return
+        # Append this follower to the list
         followers.append(follower_details)
 
-
-    # If we successfully reach this point, return the appropriate response
+    # Return the follower list in a Success response
     response = Response(
         json.dumps(followers),
         status=200
@@ -125,38 +126,38 @@ def timeline(user_id):
     authenticated user is following.
     '''
     
-    # This represents the json object we will return
-    tweet_list = []
+    # The list of tweets to be returned
     tweets = []
     
-    # Get user's following list
+    # Get the authenticated user
     user = g.db.users.find_one({'_id': user_id})
     
-    # Populate timeline if user is following any other users
+    # Populate timeline if the authenticated user is following any other users
     if 'following' in user:
     
-        # Query for only 'following' field from the user_id passed from the users collection
+        # Get tweets from every followed user to add the tweet list
         for following_id in user['following']:
             
-            # Obtain tweet details from the results
+            # Get at all this user's tweets and append them to the list
             for tweet in g.db.tweets.find({'user_id': following_id}):
                 
-                # Assign results to variables and setup dictionary to be appended
+                # Format the required tweet details properly
                 tweet_details = {
                     'created': tweet['created'].isoformat(),
                     'id': str(tweet['_id']),
                     'text': tweet['content'],
-                    'uri': '/tweet/' + str(tweet['_id']),
+                    'uri': '/tweet/{}'.format(tweet['_id']),
+                    # 'uri': '/tweet/' + str(tweet['_id']),
                     'user_id': str(tweet['user_id'])
                 }
                 
-                # Append dictionary to running tweet_list for later sorting
-                tweet_list.append(tweet_details)
+                # Append this tweet to the list
+                tweets.append(tweet_details)
     
-        # Sort list of dictionary elements by date value
-        tweets = sorted(tweet_list, key=lambda k: k['created'], reverse=True)
+        # Sort the tweets by date created, from newest to oldest
+        tweets = sorted(tweets, key=lambda k: k['created'], reverse=True)
     
-    # If we successfully reach this point, return the appropriate response
+    # Return the tweet list in a success response
     response = Response(
         json.dumps(tweets),
         status=200

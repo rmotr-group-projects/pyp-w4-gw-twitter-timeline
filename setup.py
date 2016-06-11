@@ -23,7 +23,7 @@ class PyTest(TestCommand):
 
 setup(
     name='rmotr.com | Twitter timeline',
-    version='0.0.1',
+    version='0.0.2',
     description="rmotr.com Group Project | Twitter timeline",
     author='rmotr.com',
     author_email='questions@rmotr.com',
