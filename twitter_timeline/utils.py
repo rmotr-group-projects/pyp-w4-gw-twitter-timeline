@@ -33,6 +33,13 @@ def auth_only(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
         # implement your logic here
+        if 'Authorization' not in request.headers:
+            return Response('No Authorization field in header',404)
+        client_access_token = request.headers['Authorization']
+        cursor = g.db.auth.find_one({'access_token': client_access_token})
+        if not cursor:
+            return Response('Access token does not match', 401)
+        kwargs['user_id'] = cursor['user_id']
         return f(*args, **kwargs)
     return decorated_function
 
@@ -41,5 +48,7 @@ def json_only(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
         # implement your logic here
+        if request.get_json() is None:
+            abort(400)
         return f(*args, **kwargs)
     return decorated_function
