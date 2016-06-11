@@ -6,7 +6,7 @@ from twitter_timeline import settings
 
 if __name__ == '__main__':
     app.debug = True
-    app.config['SECRET_KEY'] = "kljasdno9asud89uy981uoaisjdoiajsdm89uas980d"
+    app.config['SECRET_KEY'] = "kljasdno9asud89uy981uoaisjdoiajsdm89uas980e"
     app.config['DATABASE'] = settings.DATABASE_NAME
 
     host = os.environ.get('IP', '0.0.0.0')
