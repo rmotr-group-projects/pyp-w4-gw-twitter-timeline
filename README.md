@@ -4,7 +4,7 @@ Today's group work expands the Twitter API with a few new endpoints, including f
 
 ## Authentication
 
-The authentication method has changed a bit compared to the previous one. We keep using authentication tokens, but instead of sending tokens in the POST payload, we will not be sending them now in the request headers.
+The authentication method has changed a bit compared to the previous one. We keep using authentication tokens, but instead of sending tokens in the POST payload, we will be sending them now in the request headers.
 
 ```bash
 Authorization: <ACCESS_TOKEN>
