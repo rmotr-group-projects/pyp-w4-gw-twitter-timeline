@@ -117,27 +117,28 @@ def followers():
 @app.route('/timeline', methods=['GET'])
 @auth_only
 def timeline():
-    # get this user.  575b5c2bab63bca09af707a5
     user_id = get_user_id(request)
 
     followed_db = g.db.friendships.find({'follower_id': user_id})
-
     followed_ids = [entry['followed_id'] for entry in followed_db]
 
     # iterate over that followed IDs, slurping in tweets, to make a timeline.
     all_tweets = []
     for followed_id in followed_ids:
-        tweet_cursor = g.db.tweets.find({'user_id': followed_id})
-        for tweet in tweet_cursor:
-            # borrowed this code section, mine was not working well.
-            new_tweet = dict(created=python_date_to_json_str(tweet['created']), 
-                            id = str(tweet['_id']),
-                            text=tweet['content'], 
-                            uri='/tweet/{}'.format(str(tweet['_id'])),
-                            user_id=str(followed_id))
+        tweet_db = g.db.tweets.find({'user_id': followed_id})
+        for tweet in tweet_db:
+
+            new_tweet = {
+                'created': python_date_to_json_str(tweet['created']), 
+                'id': str(tweet['_id']),
+                'text':tweet['content'], 
+                'uri': '/tweet/{}'.format(str(tweet['_id'])),
+                'user_id': str(followed_id)
+            }
             all_tweets.append(new_tweet)
-            
-    sorted_tweets = sorted(all_tweets, key=lambda k: k['created'], reverse=True)
+       
+    # http://stackoverflow.com/questions/3766633/how-to-sort-with-lambda-in-python        
+    sorted_tweets = sorted(all_tweets, key=lambda x: x['created'], reverse=True)
     
     return Response(json.dumps(sorted_tweets), 200, content_type=JSON_MIME_TYPE) 
     
