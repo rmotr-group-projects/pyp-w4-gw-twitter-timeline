@@ -32,7 +32,15 @@ def python_date_to_json_str(dt):
 def auth_only(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        # implement your logic here
+        # http://stackoverflow.com/questions/29386995/how-to-get-http-headers-in-flask
+        authkey = request.headers.get('Authorization')
+        
+        db_auth = g.db.auth.find_one({'access_token': authkey})
+        db_authkey = db_auth['access_token'] if db_auth else None
+        
+        #db_authkey = g.db.auth.find_one({'access_token': authkey})['access_token']
+        if not all((authkey, db_authkey, authkey == db_authkey)):
+            abort(401)
         return f(*args, **kwargs)
     return decorated_function
 
@@ -40,6 +48,8 @@ def auth_only(f):
 def json_only(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        # implement your logic here
+        # exact same as twitter API!
+        if request.get_json() is None:
+            abort(400)
         return f(*args, **kwargs)
     return decorated_function
