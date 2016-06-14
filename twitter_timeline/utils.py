@@ -38,7 +38,6 @@ def auth_only(f):
         db_auth = g.db.auth.find_one({'access_token': authkey})
         db_authkey = db_auth['access_token'] if db_auth else None
         
-        #db_authkey = g.db.auth.find_one({'access_token': authkey})['access_token']
         if not all((authkey, db_authkey, authkey == db_authkey)):
             abort(401)
         return f(*args, **kwargs)

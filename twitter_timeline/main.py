@@ -42,9 +42,8 @@ def add_friendship():
     # lookup target user
     user_to_follow_id = user_to_follow_db['_id']
     user_to_follow_username = user_to_follow_db['username']
-    # this user
-    user_id = g.db.users.find_one({'_id': user_id})
-    
+
+
     if user_id == user_to_follow_id:
         abort(401)
     
@@ -53,7 +52,7 @@ def add_friendship():
         abort(404)
         
     new_entry = { 
-        'follower_id': user_id,
+        'follower_id': user_id,  # this is the huge entire table of that user.
         'follower_name': username,
         'followed_id': user_to_follow_id,
         'followed_name': user_to_follow_username
@@ -61,7 +60,7 @@ def add_friendship():
                 
     g.db.friendships.insert_one(new_entry)
     return Response('', 201)
-
+    
 
 @app.route('/friendship', methods=['DELETE'])
 @json_only
@@ -80,12 +79,9 @@ def delete_friendship():
     if not all((user_to_follow, user_to_follow_db)): 
         abort(400)
     
-    # lookup target user
+    # lookup target user 
     user_to_follow_id = user_to_follow_db['_id']
-    user_to_follow_username = user_to_follow_db['_id']
-    # this user
-    user_id = g.db.users.find_one({'_id': user_id})
-    
+
     if user_id == user_to_follow_id:
         abort(401)
 
@@ -118,39 +114,22 @@ def followers():
     return Response(json.dumps(followers), 200, content_type=JSON_MIME_TYPE) 
 
 
-
 @app.route('/timeline', methods=['GET'])
 @auth_only
 def timeline():
-    # get this user.
+    # get this user.  575b5c2bab63bca09af707a5
     user_id = get_user_id(request)
-    print('This user ID: {}'.format(user_id))
-    
-    # go find the list of people (IDs) this user follows in the friendships DB.
-    followed_db = g.db.friendships.find({'followed_id':user_id})
 
-    followers = []
-    for user in followed_db:
-        username = user['follower_name']
-        uid = user['_id']
-        new = {
-            'username': username,
-            'uri': '/profile/{}'.format(username)
-        }
-        followers.append(new)
-    
-    
-    # get the ids of all the followed
+    followed_db = g.db.friendships.find({'follower_id': user_id})
+
     followed_ids = [entry['followed_id'] for entry in followed_db]
-    print('followed IDS found: {}'.format(followed_ids))
-    
-    
+
     # iterate over that followed IDs, slurping in tweets, to make a timeline.
     all_tweets = []
     for followed_id in followed_ids:
         tweet_cursor = g.db.tweets.find({'user_id': followed_id})
         for tweet in tweet_cursor:
-            # borrowed this code section from another user; part of debugging.
+            # borrowed this code section, mine was not working well.
             new_tweet = dict(created=python_date_to_json_str(tweet['created']), 
                             id = str(tweet['_id']),
                             text=tweet['content'], 
@@ -158,8 +137,6 @@ def timeline():
                             user_id=str(followed_id))
             all_tweets.append(new_tweet)
             
-    # need to sort by creation date
-    # newlist = sorted(list_to_be_sorted, key=lambda k: k['name']) 
     sorted_tweets = sorted(all_tweets, key=lambda k: k['created'], reverse=True)
     
     return Response(json.dumps(sorted_tweets), 200, content_type=JSON_MIME_TYPE) 
