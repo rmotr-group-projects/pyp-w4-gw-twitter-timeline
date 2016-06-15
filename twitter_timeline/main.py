@@ -26,14 +26,49 @@ def before_request():
 @json_only
 @auth_only
 def friendship(user_id):
-    pass
+    request_json = request.get_json()
 
+    if 'username' not in request_json:
+        abort(400) #passed username doesnt exist
+    
+    cursor = g.db.users.find_one({'username': request_json['username']})
+    
+    if cursor is None:
+        abort(400)
+    
+    if request.method == 'POST':
+        g.db.friendships.update(
+                {'user_id': user_id},
+                {'$push': {
+                    'following': {'username': request_json['username'], 'uri': '/profile/{}'.format(request_json['username'])}
+                }
+            }, upsert=True)
+        
+        return '', 201
+        
+    if request.method == 'DELETE':
+        g.db.friendships.update(
+                {'user_id': user_id},
+                {'$pull': {
+                    'following': {'username': request_json['username'], 'uri': '/profile/{}'.format(request_json['username'])}
+                }
+            })
+            
+        return '', 204
 
 @app.route('/followers', methods=['GET'])
 @auth_only
 def followers(user_id):
-    pass
-
+    profile = g.db.users.find_one({'_id': user_id})
+    cursor = g.db.friendships.find({"following.username": "{}".format(profile['username'])})
+    
+    followers = []
+    
+    for follower in cursor:
+        follow_user = g.db.users.find_one({'_id': follower['user_id']})
+        followers.append({'username': follow_user['username'], 'uri': '/profile/{}'.format(follow_user['username'])})
+        
+    return json.dumps(followers), 201
 
 @app.route('/timeline', methods=['GET'])
 @auth_only

@@ -32,14 +32,19 @@ def python_date_to_json_str(dt):
 def auth_only(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        # implement your logic here
-        return f(*args, **kwargs)
+        token = request.headers.get('Authorization')
+        cursor = g.db.auth.find_one({'access_token': token})
+        if cursor is None:
+            abort(401)
+        # cram in userid to decorated function    
+        return f(cursor['user_id'] , *args, **kwargs)
     return decorated_function
 
 
 def json_only(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        # implement your logic here
+        if request.json is None: #Verify Json in, else abort & throw 400
+            abort(400)
         return f(*args, **kwargs)
     return decorated_function
