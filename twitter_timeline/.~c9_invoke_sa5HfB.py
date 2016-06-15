@@ -35,9 +35,9 @@ def auth_only(f):
         if not "Authorization" in request.headers:
             return('no auth', 401)
         else:
-            cursor = g.db.auth.find_one({"access_token": request.headers['Authorization']})
-            user_id = cursor["user_id"]
-            return f(user_id, *args, **kwargs)
+            cursor = g.db.auth.find({"access_token": request.headers['Authorization']})
+            user_id = cursor[0]["user_id"]
+            return f(*args, **kwargs)
     return decorated_function
 
 
@@ -45,6 +45,6 @@ def json_only(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
             if request.get_json() is None:
-                abort(400)
+                about
         return f(*args, **kwargs)
     return decorated_function
