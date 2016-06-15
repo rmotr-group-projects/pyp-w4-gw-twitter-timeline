@@ -14,5 +14,3 @@ FULL_MONGO_HOST = "mongodb://{usr}:{pwd}@{host}:{port}/{db}".format(
     host=HOST,
     port=PORT,
     db=DATABASE_NAME)
-
-print FULL_MONGO_HOST

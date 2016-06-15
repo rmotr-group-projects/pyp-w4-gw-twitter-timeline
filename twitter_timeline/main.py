@@ -1,6 +1,3 @@
-import json
-import pdb
-import pymongo
 from pymongo import MongoClient
 from bson.objectid import ObjectId
 from flask import Flask, g, jsonify
@@ -30,15 +27,12 @@ def before_request():
 def friendship():
     
     friend_name = field_in_request("username")
-    
     my_name = get_username_from_id(get_id_from_token())
-    
     friend_dict = {"username": my_name ,"uri": "/profile/" + my_name}  
     
     if request.method == "POST":
         
-        if not update_users("username", friend_name, "$push", "friends", friend_dict):
-        
+        if not update_users("username", friend_name, "$push", "friends", friend_dict).matched_count:
             # No user with friend_name in db
             abort(400)
             
@@ -53,12 +47,7 @@ def friendship():
 
 
 def update_users(field, field_value, method, lst_name, lst_value):
-    return g.db.users.update_one(
-            { field: field_value },
-                { 
-                    method: { lst_name: lst_value } 
-                }
-        )
+    return g.db.users.update_one( { field: field_value }, { method: { lst_name: lst_value } })
     
 def get_id_from_token():
     return g.db.auth.find_one({"access_token": request.headers['Authorization']})["user_id"]
@@ -69,16 +58,24 @@ def get_username_from_id(user_id):
     
     
 def get_id_from_username(username):
-    try:
-        return g.db.users.find_one({"username": username})["_id"]
-    except TypeError:
-        abort(400)
+    return g.db.users.find_one({"username": username})["_id"]
 
 def field_in_request(field_name):
     if field_name not in request.json:
         abort(400)
         
     return request.json[field_name]
+    
+def tweet_to_dict(tweet):
+    tweet_dict = {
+        'created': python_date_to_json_str(tweet['created']),
+        'id': str(tweet["_id"]),
+        'text': tweet['content'],
+        'uri': '/tweet/' + str(tweet["_id"]),
+        'user_id': str(tweet["user_id"])
+    }
+    return tweet_dict 
+    
 
 @app.route('/followers', methods=['GET'])
 @auth_only
@@ -88,32 +85,16 @@ def followers():
     
 
 
-
 @app.route('/timeline', methods=['GET'])
 @auth_only
 def timeline():
-    tweets = []
-    user_id = get_id_from_token()
-    following = g.db.users.find_one({"_id": user_id})["following"]
+ 
+    following = g.db.users.find_one({"_id": get_id_from_token()})["following"]
+    cursor = g.db.tweets.find( {"user_id": { "$in": following }} ).sort("created", -1)
     
-    cursor = g.db.tweets.find( {"user_id": { "$in": following }} )
-    sorted_cursor = cursor.sort("created",pymongo.DESCENDING)
-    
-    for el in sorted_cursor:
-        tweet_dict = {
-            'created': python_date_to_json_str(el['created']),
-            'id': str(el["_id"]),
-            'text': el['content'],
-            'uri': '/tweet/' + str(el["_id"]),
-            'user_id': str(el["user_id"])
-        }
-        tweets.append(tweet_dict)
+    tweets = [tweet_to_dict(tweet) for tweet in cursor]
     
     return jsonify(tweets)
-
-    
-    
-
 
 @app.errorhandler(404)
 def not_found(e):
@@ -123,3 +104,4 @@ def not_found(e):
 @app.errorhandler(401)
 def not_found(e):
     return '', 401
+
