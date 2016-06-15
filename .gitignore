@@ -87,3 +87,12 @@ ENV/
 
 # Rope project settings
 .ropeproject
+
+# venv
+pyp-w4-gw-twitter-timeline/
+
+# planning files
+skeleton_db.txt
+
+# test
+tests/.~c9_*
