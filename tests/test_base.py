@@ -35,17 +35,23 @@ class BaseTwitterAPITestCase(unittest.TestCase):
                 'password': md5('user1-pass').hexdigest(),
                 'first_name': 'Test',
                 'last_name': 'User',
-                'birth_date': '2016-01-30'
+                'birth_date': '2016-01-30',
+                'friends': [],
+                'following': []
             },
             {
                 '_id': ObjectId('575b5c2bab63bca09af707a4'),
                 'username': 'testuser2',
                 'password': md5('1234').hexdigest(),
+                'friends': [],
+                'following' : []
             },
             {
                 '_id': ObjectId('575b5c2bab63bca09af707a3'),
                 'username': 'testuser3',
                 'password': md5('1234').hexdigest(),
+                'friends': [],
+                'following' : []
             },
         ]
 
