@@ -3,9 +3,9 @@ import os
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 HOST = "ds015334.mlab.com"
-USERNAME = "xyzhelen"
+USERNAME = "xyhelen"
 PASSWORD = "cookies5"
-PORT = 15334
+PORT = #13014
 DATABASE_NAME = "shinythings"
 
 FULL_MONGO_HOST = "mongodb://{usr}:{pwd}@{host}:{port}/{db}".format(
