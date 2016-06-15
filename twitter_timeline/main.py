@@ -77,6 +77,9 @@ def timeline(user_id):
     
     following = []
     
+    if user_friendships is None:
+        return json.dumps(following)
+    
     for person in user_friendships['following']:
         followed_profile = g.db.users.find_one({'username': person['username']})
         following.append(followed_profile['_id'])
