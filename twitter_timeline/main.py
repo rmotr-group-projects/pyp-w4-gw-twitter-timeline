@@ -1,6 +1,6 @@
 import json
 
-from pymongo import MongoClient
+from pymongo import MongoClient, DESCENDING
 from bson.objectid import ObjectId
 from flask import Flask, g
 
@@ -73,8 +73,28 @@ def followers(user_id):
 @app.route('/timeline', methods=['GET'])
 @auth_only
 def timeline(user_id):
-    pass
-
+    user_friendships = g.db.friendships.find_one({'user_id': user_id})
+    
+    following = []
+    
+    for person in user_friendships['following']:
+        followed_profile = g.db.users.find_one({'username': person['username']})
+        following.append(followed_profile['_id'])
+    
+    cursor = g.db.tweets.find({"user_id": {"$in": following}}, sort=[('created', DESCENDING)])
+    
+    timeline = []
+    
+    for tweet in cursor:
+        timeline.append({
+            'created': python_date_to_json_str(tweet['created']),
+            'id': str(tweet['_id']),
+            'text': tweet['content'],
+            'uri':  '/tweet/{}'.format(str(tweet['_id'])),
+            'user_id': str(tweet['user_id']),
+        })
+    
+    return json.dumps(timeline)
 
 @app.errorhandler(404)
 def not_found(e):
