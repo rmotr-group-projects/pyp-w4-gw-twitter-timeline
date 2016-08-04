@@ -105,31 +105,21 @@ def timeline(user_id):
         for tweet in tweets:
             temp_dict = {}
             temp_dict['created'] = tweet['created']
-            temp_dict['id'] = tweet['_id']
+            temp_dict['id'] = str(tweet['_id'])
             temp_dict['text'] = tweet['content']
             temp_dict['uri'] = "/tweet/{tweet_id}".format(tweet_id = tweet['_id'])
-            temp_dict['user_id'] = _id
+            temp_dict['user_id'] = str(_id)
             all_unsorted_tweets.append(temp_dict)
-    # timeline = sorted(all_unsorted_tweets, key = _date_sorting, reverse = True)
-    #look at utils
+    timeline = sorted(all_unsorted_tweets, key = _date_sorting, reverse = True)
+    for tweet in timeline:
+        tweet['created'] = python_date_to_json_str(tweet['created'])
+    response = Response(response = json.dumps(timeline), status = 200, mimetype= JSON_MIME_TYPE)
+    return response
     
-    return str(all_unsorted_tweets)
-    #return str(timeline)
 
-# def sqlite_date_to_python(date_str):
-#     return datetime.strptime(date_str, "%Y-%m-%d %H:%M:%S")
-
-
-# def python_date_to_json_str(dt):
-#     return dt.strftime("%Y-%m-%dT%H:%M:%S")
-#     "created": {
-#         "$date": "2016-06-11T12:00:00.000Z"
-
-# def _date_sorting(tweet_info):
-#     date = sqlite_date_to_python(str(tweet_info['created']))
-#     #looks like "2016"
-#     # date = datetime(date)
-#     return date
+def _date_sorting(tweet_info):
+    date = sqlite_date_to_python(str(tweet_info['created']))
+    return date
 
 
 @app.errorhandler(404)
