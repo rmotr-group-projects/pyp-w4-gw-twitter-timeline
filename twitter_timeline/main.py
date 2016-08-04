@@ -69,7 +69,7 @@ def friendship(user_id):
             abort(400)
     if request.method == "DELETE":
         #this will test if we're following the friend, before unfollowing
-        if (friend_object["_id"] in followING) and (user_object["_id"] not in followERS): #need to add followERS stuff here too
+        if (friend_object["_id"] in followING) and (user_object["_id"] in followERS): #need to add followERS stuff here too
             followING.remove(friend_object["_id"])
             followERS.remove(user_object["_id"])
             g.db.users.update_one( {"_id": ObjectId(user_id)}, {"$set": {"following": followING}} )
@@ -82,15 +82,11 @@ def friendship(user_id):
 @auth_only
 def followers(user_id):
     follower_id_list = _get_user_followers(user_id)
-    # return str(follower_id_list)
-    # return str(user_object["followers"])
-    
     followers_return = []
     if follower_id_list is None: return Response(response = json.dumps(followers_return, status = 200, mimetype =JSON_MIME_TYPE))
     for _id in follower_id_list:
         follower_object = g.db.users.find_one({"_id": _id})
         
-        return _id
         temp_dict = {}
         temp_dict['username'] = follower_object["username"]
         temp_dict['uri'] = "/profile/{username}".format(username = temp_dict['username'])
@@ -121,14 +117,14 @@ def not_found(e):
 
 def _get_user_followers(user_id):
     user_object = g.db.users.find_one({"_id": user_id})
+    user_object.setdefault("followers", [])
+    return user_object["followers"]
+   
     
-    # return user_object["followers"]
-    # print("here")
-    return str(user_object)
 
     
 def _get_user_following(user_id):
     user_object = g.db.users.find_one({"_id": user_id})
-
-    #return user_object["following"]
-    return str(user_object)
+    user_object.setdefault("following", [])
+    return user_object["following"]
+  
