@@ -2,13 +2,11 @@ import json
 from pymongo import MongoClient
 from bson.objectid import ObjectId
 from flask import Flask, g, Response
-
+import datetime
 from twitter_timeline import settings
 from twitter_timeline.utils import *
 
 JSON_MIME_TYPE = "application/json"
-#DEBUG
-from pprint import pprint
 
 app = Flask(__name__)
 JSON_MIME_TYPE = 'application/json'
@@ -83,7 +81,6 @@ def friendship(user_id):
 def followers(user_id):
     follower_id_list = _get_user_followers(user_id)
     followers_return = []
-    if follower_id_list is None: return Response(response = json.dumps(followers_return, status = 200, mimetype =JSON_MIME_TYPE))
     for _id in follower_id_list:
         follower_object = g.db.users.find_one({"_id": _id})
         
@@ -100,10 +97,39 @@ def followers(user_id):
 @app.route('/timeline', methods=['GET'])
 @auth_only
 def timeline(user_id):
-    user_object = g.db.users.find_one({"_id": user_id})
-    for _id in user_object["following"]:
-        following_object = 1
-    pass
+    following = _get_user_following(user_id)
+    timeline = []
+    all_unsorted_tweets = []
+    for _id in following:
+        tweets = g.db.tweets.find({"user_id": _id})
+        for tweet in tweets:
+            temp_dict = {}
+            temp_dict['created'] = tweet['created']
+            temp_dict['id'] = tweet['_id']
+            temp_dict['text'] = tweet['content']
+            temp_dict['uri'] = "/tweet/{tweet_id}".format(tweet_id = tweet['_id'])
+            temp_dict['user_id'] = _id
+            all_unsorted_tweets.append(temp_dict)
+    # timeline = sorted(all_unsorted_tweets, key = _date_sorting, reverse = True)
+    #look at utils
+    
+    return str(all_unsorted_tweets)
+    #return str(timeline)
+
+# def sqlite_date_to_python(date_str):
+#     return datetime.strptime(date_str, "%Y-%m-%d %H:%M:%S")
+
+
+# def python_date_to_json_str(dt):
+#     return dt.strftime("%Y-%m-%dT%H:%M:%S")
+#     "created": {
+#         "$date": "2016-06-11T12:00:00.000Z"
+
+# def _date_sorting(tweet_info):
+#     date = sqlite_date_to_python(str(tweet_info['created']))
+#     #looks like "2016"
+#     # date = datetime(date)
+#     return date
 
 
 @app.errorhandler(404)
@@ -120,9 +146,6 @@ def _get_user_followers(user_id):
     user_object.setdefault("followers", [])
     return user_object["followers"]
    
-    
-
-    
 def _get_user_following(user_id):
     user_object = g.db.users.find_one({"_id": user_id})
     user_object.setdefault("following", [])
