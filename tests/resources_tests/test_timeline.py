@@ -58,7 +58,7 @@ class TimelineResourceTestCase(BaseTwitterAPITestCase):
             content_type='application/json')
 
         response = self.client.get('/timeline',
-                                   headers=headers)
+                                  headers=headers)
         self.assertEqual(response.status_code, 200)
         expected = [
             {
@@ -96,7 +96,7 @@ class TimelineResourceTestCase(BaseTwitterAPITestCase):
     def test_user_timeline_no_followings(self):
         headers = {'Authorization': '$RMOTR$-U2'}
         response = self.client.get('/timeline',
-                                   headers=headers)
+                                  headers=headers)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(
             json.loads(response.data.decode(response.charset)), [])
