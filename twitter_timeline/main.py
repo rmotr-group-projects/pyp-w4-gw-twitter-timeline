@@ -26,19 +26,38 @@ def before_request():
 @json_only
 @auth_only
 def friendship(user_id):
-    pass
+    # Create new friendship
+    if request.method == 'POST':
+        pass
+    # Remove friendship
+    elif request.method == 'DELETE':
+        pass
+    # Unsupported request method
+    else:
+        abort(400)
 
 
 @app.route('/followers', methods=['GET'])
 @auth_only
 def followers(user_id):
-    pass
+    # Get followers of user
+    if request.method == 'GET':
+        pass
+    # Unsupported request method
+    else:
+        abort(400)
+        
 
 
 @app.route('/timeline', methods=['GET'])
 @auth_only
 def timeline(user_id):
-    pass
+    # Get timeline of user
+    if request.method == 'GET':
+        pass
+    # Unsupported request method
+    else:
+        abort(400)
 
 
 @app.errorhandler(404)

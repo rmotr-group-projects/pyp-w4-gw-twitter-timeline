@@ -4,9 +4,24 @@ import random
 from datetime import datetime
 from functools import wraps
 
-from flask import request, g, abort
+from pymongo import MongoClient
+from twitter_timeline import settings
+
+from flask import request, g, abort, Flask
+
+app = Flask(__name__)
 
 JSON_MIME_TYPE = 'application/json'
+
+# Would these being here be a different instance? Or potentially other unintended consequences?
+def connect_db(db_name):
+    mongo = MongoClient(settings.FULL_MONGO_HOST)
+    return mongo[db_name]
+
+@app.before_request
+def before_request():
+    g.db = connect_db(settings.DATABASE_NAME)
+
 
 
 def md5(token):
@@ -32,14 +47,31 @@ def python_date_to_json_str(dt):
 def auth_only(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        # implement your logic here
-        return f(*args, **kwargs)
+        # No Header
+        if 'Authorization' not in request.headers:
+            abort(401)
+        else:
+            header_token = request.headers['Authorization']
+            # Figure out if token in in mongodb
+            auth_doc = g.db.auth.find_one({'access_token':header_token})
+            if auth_doc:
+                # Need check cases where token is in cases of self
+                # user_doc = g.db.users.find_one({'_id':auth_doc['user_id']})
+                pass
+                # Checks if an argument is passed
+                if not args:
+                    args = (auth_doc['user_id'],)
+                return f(*args, **kwargs)
+            else:
+                abort(401)
     return decorated_function
 
 
 def json_only(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        # implement your logic here
-        return f(*args, **kwargs)
+        if request.content_type == JSON_MIME_TYPE:
+            return f(*args, **kwargs)
+        else:
+            abort(400)
     return decorated_function
