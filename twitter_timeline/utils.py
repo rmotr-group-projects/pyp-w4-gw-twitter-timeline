@@ -4,32 +4,15 @@ import random
 from datetime import datetime
 from functools import wraps
 
-from pymongo import MongoClient
-from twitter_timeline import settings
-
-from flask import request, g, abort, Flask
-
-app = Flask(__name__)
+from flask import request, g, abort
 
 JSON_MIME_TYPE = 'application/json'
-
-# Would these being here be a different instance? Or potentially other unintended consequences?
-def connect_db(db_name):
-    mongo = MongoClient(settings.FULL_MONGO_HOST)
-    return mongo[db_name]
-
-@app.before_request
-def before_request():
-    g.db = connect_db(settings.DATABASE_NAME)
-
-
 
 def md5(token):
     new_token = token
     if str != bytes:
         new_token = token.encode('utf-8')
     return hashlib.md5(new_token)
-
 
 def generate_random_token(size=15):
     chars = string.ascii_uppercase + string.digits
