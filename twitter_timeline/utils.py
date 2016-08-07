@@ -32,8 +32,6 @@ def python_date_to_json_str(dt):
 def auth_only(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        #print(request.headers)
-        # Checks to see if 'Authorization' was even put into the request header
         if 'Authorization' not in request.headers:
             abort(401)
         else:
@@ -41,21 +39,6 @@ def auth_only(f):
             if auth_doc_current_user == None:
                 abort(401)
             user_id = auth_doc_current_user['user_id']
-        # print("AUTH:" + auth_doc_current_user['Authorization'])
-        # print(auth_doc_current_user)
-        # if auth_doc_current_user['Authorization'] == None:
-        #     abort(401)
-        
-        # Get the user_id from the user collection and store it in a kwarg
-        # if g.db.auth.find_one() == None:
-        #print(request.headers['Authorization'])
-        #print(auth_doc_current_user)
-        # for this in user_id:
-        #     print(this)
-            
-        # print("THIS IS ME" + str(user_id))
-        # print("[]"*10)
-        #print(user_id)
         kwargs['user_id'] = user_id
         return f(*args, **kwargs)
     return decorated_function
