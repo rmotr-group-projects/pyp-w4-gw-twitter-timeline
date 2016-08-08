@@ -136,7 +136,32 @@ def followers(user_id):
 def timeline(user_id):
     # Get timeline of user
     if request.method == 'GET':
-        pass
+        # Gets followings and create a list of of user ids of followings and current user
+        user_friendship_doc = get_friendship_doc_from_uuid(user_id)
+        if 'followers' in user_friendship_doc:
+            timeline_list = user_friendship_doc['following']
+            # # Account for tweets by self
+            # timeline_list = following_list + [user_id]
+            # Gets tweets of user and users they're following, sorting created time in 
+            tweets_collection = g.db.tweets
+            timeline_doc = tweets_collection.find({'user_id':{'$in':timeline_list}}).sort('created',-1)
+            response = [
+                {
+                    'created':tweet['created'].isoformat(),
+                    'id':str(tweet['_id']),
+                    'text':str(tweet['content']),
+                    'uri':'/tweet/{}'.format(tweet['_id']),
+                    'user_id':str(tweet['user_id'])
+                }
+                for tweet in timeline_doc]
+            response_json = json.dumps(response)
+            return Response(response_json, status=200, mimetype=JSON_MIME_TYPE)
+
+        # Returns empty list because forever alone
+        else:
+            response_json = json.dumps([])
+            return Response(response_json, status=200, mimetype=JSON_MIME_TYPE)
+        
     # Unsupported request method
     else:
         abort(400)
@@ -167,6 +192,17 @@ def get_user_id_from_name(username):
     else:
         return None
     
+# For readability
+def get_friendship_doc_from_uuid(user_id):
+    user_friendship_doc = g.db.friendships.find_one({'user_id':user_id})
+    return user_friendship_doc
 
-    
-    
+def update_user_collection(collection, user_id, update_type, update_field, update_value):
+    result = collection.update(
+        {
+            'user_id':user_id}, 
+        {
+            update_type:
+            {update_field:update_value}
+        })
+    return result
