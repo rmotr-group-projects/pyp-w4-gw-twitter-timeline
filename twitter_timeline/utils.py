@@ -39,13 +39,13 @@ def auth_only(f):
         return f(*args, **kwargs)
     return decorated_function
 
-def get_own_user(f):
+def get_username(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
         check = request.headers.get('Authorization')
         user = g.db.auth.find_one({'access_token': check})
         user = g.db.users.find_one({'_id': user['user_id']}, {'username': 1, '_id': 0})
-        kwargs['own_user'] = user['username']
+        kwargs['username'] = user['username']
         return f(*args, **kwargs)
     return decorated_function
 
