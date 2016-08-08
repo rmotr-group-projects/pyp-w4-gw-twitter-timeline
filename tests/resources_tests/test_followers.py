@@ -9,6 +9,7 @@ class FollowersResourceTestCase(BaseTwitterAPITestCase):
         # Preconditions
         headers = {'Authorization': '$RMOTR$-U2'}
         response = self.client.get('/followers', headers=headers)
+
         followers = json.loads(response.data.decode(response.charset))
         self.assertEqual(followers, [])
 
