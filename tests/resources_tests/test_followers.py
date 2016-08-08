@@ -1,9 +1,11 @@
 import json
-
+from pymongo import MongoClient
 from ..test_base import BaseTwitterAPITestCase
 
 
 class FollowersResourceTestCase(BaseTwitterAPITestCase):
+
+    maxDiff = None
 
     def test_get_followers(self):
         # Preconditions
