@@ -24,7 +24,9 @@ class BaseTwitterAPITestCase(unittest.TestCase):
         self.client = app.test_client()
 
     def clean_collections(self):
-        for col_name in ['users', 'tweets', 'auth', 'friendships']:
+        names = self.db.collection_names()
+        names.remove('system.indexes')
+        for col_name in names:
             self.db[col_name].drop()
 
     def load_fixtures(self):

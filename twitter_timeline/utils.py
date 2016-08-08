@@ -32,7 +32,20 @@ def python_date_to_json_str(dt):
 def auth_only(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        # implement your logic here
+        check = request.headers.get('Authorization')
+        user = g.db.auth.find_one({'access_token': check})
+        if not user:
+            abort(401)
+        return f(*args, **kwargs)
+    return decorated_function
+
+def get_username(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        check = request.headers.get('Authorization')
+        user = g.db.auth.find_one({'access_token': check})
+        user = g.db.users.find_one({'_id': user['user_id']}, {'username': 1, '_id': 0})
+        kwargs['username'] = user['username']
         return f(*args, **kwargs)
     return decorated_function
 
@@ -40,6 +53,7 @@ def auth_only(f):
 def json_only(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        # implement your logic here
+        if not (request.content_type == JSON_MIME_TYPE):
+            abort(401)
         return f(*args, **kwargs)
     return decorated_function
