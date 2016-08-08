@@ -112,3 +112,23 @@ class BaseTwitterAPITestCase(unittest.TestCase):
             }
         ]
         self.db.auth.insert(access_tokens)
+        
+        friendships = [
+            {
+                'user_id': self.user_1_id,
+                'following':[],
+                'followers':[]
+            },
+            {
+                'user_id': self.user_2_id,
+                'following':[],
+                'followers':[]
+            },
+            {
+                'user_id': self.user_3_id,
+                'following':[],
+                'followers':[]
+            }
+            
+        ]
+        self.db.friendships.insert(friendships)
