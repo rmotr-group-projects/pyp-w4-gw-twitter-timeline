@@ -38,21 +38,24 @@ def friendship(user_id):
         abort(400)
     
     '''friendship should look like {{_id:id, following:[user_id_objects], followers:[user_id_objects] user_id:user_id_object}}'''
+
+    friendship_collection = g.db.friendships
+    user_friendship_doc = friendship_collection.find_one({'user_id':user_id})
+
     # Create new friendship
     if request.method == 'POST':
-        friendship_collection = g.db.friendships
-        user_friendship_doc = friendship_collection.find_one({'user_id':user_id})
+        # If user ID is already being followed Conflict is given
         if request_user_id in user_friendship_doc['following']:
             return Response(status=409)
         else:
+            # If bad username request
             if not get_username_from_id(request_user_id):
                 return Response(status=400)
 
             # Updates the user to follow the requested user
             friendship_collection.update(
             {
-                'user_id':user_id
-            }, 
+                'user_id':user_id}, 
             {
                 '$push':
                 {'following':request_user_id}
@@ -61,8 +64,7 @@ def friendship(user_id):
             # Updates the requested user (by the)
             g.db.friendships.update(
             {
-                'user_id':request_user_id
-            },
+                'user_id':request_user_id},
             {
                 '$push':
                 {'followers':user_id}
@@ -72,7 +74,29 @@ def friendship(user_id):
 
     # Remove friendship
     elif request.method == 'DELETE':
-        pass
+        if request_user_id in user_friendship_doc['following']:
+
+            # Updates the user to follow the requested user
+            friendship_collection.update(
+            {
+                'user_id':user_id}, 
+            {
+                '$pull':
+                {'following':request_user_id}
+            })
+
+            # Updates the requested user (by the)
+            g.db.friendships.update(
+            {
+                'user_id':request_user_id},
+            {
+                '$pull':
+                {'followers':user_id}
+            })
+            
+            return Response(status=204)
+        else:
+            return Response(status=400)
     # Unsupported request method
     else:
         abort(400)
@@ -81,7 +105,7 @@ def friendship(user_id):
 @app.route('/followers', methods=['GET'])
 @auth_only
 def followers(user_id):
-    # Get followers of user
+    # Get followers of user, returns a JSON
     if request.method == 'GET':
         friendship_collection = g.db.friendships
         user_friendship_doc = friendship_collection.find_one({'user_id':user_id})
@@ -101,7 +125,6 @@ def followers(user_id):
         else:
             response_json = json.dumps([])
             return Response(response_json, status=201, mimetype='application/json')
-        
 
     # Unsupported request method
     else:
