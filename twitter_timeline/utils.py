@@ -6,6 +6,7 @@ from functools import wraps
 
 from flask import request, g, abort
 
+
 JSON_MIME_TYPE = 'application/json'
 
 
@@ -22,7 +23,7 @@ def generate_random_token(size=15):
 
 
 def sqlite_date_to_python(date_str):
-    return datetime.strptime(date_str, "%Y-%m-%d %H:%M:%S")
+    return datetime.strptime(date_str, "%Y-%m-%dT%H:%M:%S.%fZ")
 
 
 def python_date_to_json_str(dt):
@@ -32,14 +33,20 @@ def python_date_to_json_str(dt):
 def auth_only(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        # implement your logic here
-        return f(*args, **kwargs)
+        if 'Authorization' not in request.headers:
+            abort(401)
+        token = request.headers.get('Authorization')
+        user_info = g.db.auth.find_one({"access_token":token})
+        if not user_info:
+            abort(401)
+        return f(user_info['user_id'], *args, **kwargs)
     return decorated_function
 
 
 def json_only(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        # implement your logic here
+        if request.content_type != JSON_MIME_TYPE:
+            abort(400)
         return f(*args, **kwargs)
     return decorated_function
