@@ -30,10 +30,12 @@ def friendship(user_id):
     if 'username' not in body:
         abort(400)
     friend = g.db.users.find_one({"username": body['username']})
+
     if not friend:
         abort(400)
     if request.method == 'POST':
-        g.db.friendships.insert({"user_id": ObjectId(user_id), "friend_id": ObjectId(friend['_id'])})
+        g.db.friendships.insert({"user_id": ObjectId(user_id),
+                                 "friend_id": ObjectId(friend['_id'])})
         return '', 201
     if request.method == 'DELETE':
         g.db.friendships.remove({"user_id": user_id, "friend_id": friend['_id']})
@@ -48,8 +50,7 @@ def followers(user_id):
     for friend in friends:
         friend_info = g.db.users.find_one({"_id": friend['user_id']})
         friendship = {"username": friend_info['username'],
-                      "uri": "/profile/{}".format(friend_info['username'])
-                      }
+                      "uri": "/profile/{}".format(friend_info['username'])}
         response.append(friendship)
     return jsonify(response), 200
 

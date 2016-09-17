@@ -3,8 +3,8 @@ import os
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 HOST = 'ds044679.mlab.com'
-USERNAME = 'aronivars'
-PASSWORD = 'bigron86'
+USERNAME = 'twitterapiuser'
+PASSWORD = 'secret'
 PORT = 44679
 DATABASE_NAME = 'twitter_timeline'
 
