@@ -33,17 +33,31 @@ def friendship():
     usernames = g.db.users.find({'username':leader_username})
     if not list(usernames):
         abort(400)
-    request_user = convert_token_to_id(request.headers.get('Authorization'))#######
-    g.db.followers.insert({'user_id':request_user, 'follows':leader_username})
-    g.db.commit()
-    return '', 201
+    if request.method == 'POST':
+        request_user = convert_token_to_id(request.headers.get('Authorization'))
+        g.db.followers.insert({'follower_id':request_user, 'leader_username':leader_username})
+        return '', 201
 
 
 @app.route('/followers', methods=['GET'])
 @auth_only
 def followers():
-    pass
-
+    req_user_id = convert_token_to_id(request.headers.get('Authorization'))
+    req_user_username = convert_id_to_username(req_user_id)
+    cur = g.db.followers.find({'leader_username':req_user_username})
+    arr = []
+    for item in cur:
+        print(item['follower_id'])
+        username = convert_id_to_username(item['follower_id'])
+        print(username)
+        my_dict = {
+            'username':username,
+            'uri':'/profile/%s'%username
+        }
+        print(my_dict)
+        arr.append(my_dict)
+        print(arr)
+    return json.dumps(arr)
 
 @app.route('/timeline', methods=['GET'])
 @auth_only
@@ -61,7 +75,15 @@ def not_found(e):
     return '', 401
 
 #helper functions
-def convert_token_to_id(token):
-    print('enter')
-    cur = g.db.find({'access_token':token})
-    return list(cur)['user_id']
+def convert_token_to_id(token):#works now!
+    cur = g.db.auth.find_one({'access_token':token})
+    return cur['user_id']
+
+def convert_id_to_username(id):#works also!
+    id = ObjectId(id)
+    cur = g.db.users.find_one({'_id':id})
+    return cur['username']
+
+
+
+

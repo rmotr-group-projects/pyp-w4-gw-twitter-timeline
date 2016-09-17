@@ -7,6 +7,7 @@ class CreateFriendshipTestCase(BaseTwitterAPITestCase):
 
     def test_follow_user(self):
         # Preconditions
+        self.db.followers.remove({})
         headers = {'Authorization': '$RMOTR$-U2'}
         response = self.client.get('/followers', headers=headers)
         followers = json.loads(response.data.decode(response.charset))
