@@ -39,7 +39,7 @@ class CreateFriendshipTestCase(BaseTwitterAPITestCase):
             content_type='application/json')
         self.assertEqual(response.status_code, 400)
 
-    def test_follow_not_authenticated(self):
+    def test_follow_not_authenticated(self):#passed
         data = {'username': 'testuser2'}
         headers = {'Authorization': 'foobar'}
         response = self.client.post(
@@ -49,7 +49,7 @@ class CreateFriendshipTestCase(BaseTwitterAPITestCase):
             content_type='application/json')
         self.assertEqual(response.status_code, 401)
 
-    def test_follow_missing_username(self):
+    def test_follow_missing_username(self):#passed
         headers = {'Authorization': '$RMOTR$-U1'}
         response = self.client.post(
             '/friendship',
@@ -58,7 +58,7 @@ class CreateFriendshipTestCase(BaseTwitterAPITestCase):
             content_type='application/json')
         self.assertEqual(response.status_code, 400)
 
-    def test_follow_missing_access_token(self):
+    def test_follow_missing_access_token(self):#passed
         data = {'username': 'testuser2'}
         response = self.client.post(
             '/friendship',

@@ -2,10 +2,11 @@ import json
 
 from pymongo import MongoClient
 from bson.objectid import ObjectId
-from flask import Flask, g
+from flask import (Flask, g, abort, Response)
 
 from twitter_timeline import settings
 from twitter_timeline.utils import *
+import pymongo
 
 app = Flask(__name__)
 
@@ -25,13 +26,22 @@ def before_request():
 @app.route('/friendship', methods=['POST', 'DELETE'])
 @json_only
 @auth_only
-def friendship(user_id):
-    pass
+def friendship():
+    if 'username' not in request.json:
+        abort(400)
+    leader_username = request.json.get('username')
+    usernames = g.db.users.find({'username':leader_username})
+    if not list(usernames):
+        abort(400)
+    request_user = convert_token_to_id(request.headers.get('Authorization'))#######
+    g.db.followers.insert({'user_id':request_user, 'follows':leader_username})
+    g.db.commit()
+    return '', 201
 
 
 @app.route('/followers', methods=['GET'])
 @auth_only
-def followers(user_id):
+def followers():
     pass
 
 
@@ -49,3 +59,9 @@ def not_found(e):
 @app.errorhandler(401)
 def not_found(e):
     return '', 401
+
+#helper functions
+def convert_token_to_id(token):
+    print('enter')
+    cur = g.db.find({'access_token':token})
+    return list(cur)['user_id']
