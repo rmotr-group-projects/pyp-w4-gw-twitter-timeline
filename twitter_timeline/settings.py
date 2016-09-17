@@ -2,7 +2,7 @@ import os
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-HOST = 'ds044679.mlab.com'
+HOST = 'ds033116.mlab.com'
 USERNAME = 'test_user'
 PASSWORD = 'password1'
 PORT = 44679
