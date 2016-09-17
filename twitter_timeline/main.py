@@ -51,22 +51,39 @@ def followers():
     cur = g.db.followers.find({'leader_username':req_user_username})
     arr = []
     for item in cur:
-        print(item['follower_id'])
         username = convert_id_to_username(item['follower_id'])
-        print(username)
         my_dict = {
             'username':username,
             'uri':'/profile/%s'%username
         }
-        print(my_dict)
         arr.append(my_dict)
-        print(arr)
     return json.dumps(arr)
+
 
 @app.route('/timeline', methods=['GET'])
 @auth_only
-def timeline(user_id):
-    pass
+def timeline():
+    user_id = convert_token_to_id(request.headers.get('Authorization'))
+    cur = g.db.followers.find({'follower_id':user_id})#all that the user follows
+    arr_of_leaders = []
+    for x in cur:
+        arr_of_leaders.append(x['leader_username'])
+    arr_of_leaders = map(convert_username_to_id, arr_of_leaders)
+    arr_of_tweets = []
+    for leader in arr_of_leaders:
+        curs = g.db.tweets.find({'user_id':leader})
+        for item in curs:
+            arr_of_tweets.append(item)
+    arr_of_results = []
+    for xy in arr_of_tweets:
+        id = str(xy['_id'])
+        text = xy['content']
+        twitter_user_id = str(xy['user_id'])
+        created = str(xy['created'])
+        my_dict = { 'created':created, 'id':id, 'text':text, 'uri':'/tweet/%s'%id, 'user_id':twitter_user_id }
+        arr_of_results.append(my_dict)
+    arr_of_results.sort(key=lambda item: item['created'], reverse=True)
+    return json.dumps(arr_of_results)
 
 
 @app.errorhandler(404)
@@ -78,15 +95,22 @@ def not_found(e):
 def not_found(e):
     return '', 401
 
+
 #helper functions
 def convert_token_to_id(token):#works now!
     cur = g.db.auth.find_one({'access_token':token})
     return cur['user_id']
 
+
 def convert_id_to_username(id):#works also!
     id = ObjectId(id)
     cur = g.db.users.find_one({'_id':id})
     return cur['username']
+
+
+def convert_username_to_id(username):
+    cur = g.db.users.find_one({'username':username})
+    return ObjectId(cur['_id'])
 
 
 
