@@ -37,6 +37,10 @@ def friendship():
         request_user = convert_token_to_id(request.headers.get('Authorization'))
         g.db.followers.insert({'follower_id':request_user, 'leader_username':leader_username})
         return '', 201
+    if request.method == 'DELETE':
+        request_user = convert_token_to_id(request.headers.get('Authorization'))
+        g.db.followers.remove({'leader_username':leader_username})
+        return '', 204
 
 
 @app.route('/followers', methods=['GET'])

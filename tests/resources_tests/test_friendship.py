@@ -73,7 +73,7 @@ class DeleteFriendshipTestCase(BaseTwitterAPITestCase):
 
     def setUp(self):
         super(DeleteFriendshipTestCase, self).setUp()
-
+        self.db.followers.remove({})
         headers = {'Authorization': '$RMOTR$-U1'}
         self.client.post(
             '/friendship',
@@ -88,7 +88,7 @@ class DeleteFriendshipTestCase(BaseTwitterAPITestCase):
         headers = {'Authorization': '$RMOTR$-U2'}
         response = self.client.get('/followers', headers=headers)
         followers = json.loads(response.data.decode(response.charset))
-        expected = [{'username': 'testuser1', 'uri': '/profile/testuser1'}]
+        expected = [{'username': u'testuser1', 'uri': u'/profile/testuser1'}]
         self.assertEqual(followers, expected)
 
         # testuser1 unfollows testuser2
