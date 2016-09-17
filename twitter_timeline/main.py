@@ -29,6 +29,7 @@ def friendship(user_id):
     body = request.json
     if 'username' not in body:
         abort(400)
+
     friend = g.db.users.find_one({"username":body['username']})
     
     if not friend:
@@ -36,11 +37,18 @@ def friendship(user_id):
     if request.method == 'POST':
         g.db.friendships.insert({"user_id": ObjectId(user_id), 
                                 "friend_id": ObjectId(friend['_id'])})
+    friend = g.db.users.find_one({"username": body['username']})
+
+    if not friend:
+        abort(400)
+    if request.method == 'POST':
+        g.db.friendships.insert({"user_id": ObjectId(user_id),
+                                 "friend_id": ObjectId(friend['_id'])})
         return '', 201
     if request.method == 'DELETE':
         g.db.friendships.remove({"user_id": user_id, "friend_id": friend['_id']})
         return '', 204
-        
+
 @app.route('/followers', methods=['GET'])
 @auth_only
 def followers(user_id):
@@ -53,6 +61,11 @@ def followers(user_id):
         response.append(friendship)
     return jsonify(response), 200
     
+        friendship = {"username": friend_info['username'],
+                      "uri": "/profile/{}".format(friend_info['username'])}
+        response.append(friendship)
+    return jsonify(response), 200
+
 @app.route('/timeline', methods=['GET'])
 @auth_only
 def timeline(user_id):
@@ -72,7 +85,13 @@ def timeline(user_id):
     for item in response:
         item['created'] = python_date_to_json_str(item['created'])
     return jsonify(response), 200
-
+                          }
+            response.append(tweet_data)
+    response.sort(key=lambda i: i['created'], reverse=True)
+    for item in response:
+        item['created'] = python_date_to_json_str(item['created'])
+    return jsonify(response), 200
+    
 @app.errorhandler(404)
 def not_found(e):
     return '', 404
