@@ -3,10 +3,10 @@ import os
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 HOST = 'ds044679.mlab.com'
-USERNAME = 'twitterapiuser'
-PASSWORD = 'secret'
+USERNAME = 'test_user'
+PASSWORD = 'password1'
 PORT = 44679
-DATABASE_NAME = 'twitter_timeline'
+DATABASE_NAME = 'twitter_test_db'
 
 FULL_MONGO_HOST = "mongodb://{usr}:{pwd}@{host}:{port}/{db}".format(
     usr=USERNAME,
