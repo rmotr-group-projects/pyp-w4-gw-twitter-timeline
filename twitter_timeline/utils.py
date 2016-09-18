@@ -32,7 +32,13 @@ def python_date_to_json_str(dt):
 def auth_only(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        # implement your logic here
+        data = request.headers
+        if 'Authorization' not in data:
+            return 'Access token missing', 401
+        token = data['Authorization']
+        token_fetch = g.db.auth.find({'access_token':token})
+        if token_fetch.count() == 0:
+            return 'Incorrect token', 401
         return f(*args, **kwargs)
     return decorated_function
 
@@ -40,6 +46,7 @@ def auth_only(f):
 def json_only(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        # implement your logic here
+        if not request.is_json:
+            return '', 400
         return f(*args, **kwargs)
     return decorated_function

@@ -35,7 +35,7 @@ setup(
         'pymongo==3.2.2',
     ],
     tests_require=[
-        'pytest==2.9.2',
+        'pytest==3.0.2',
         'pytest-cov==2.2.1',
         'coverage==4.0.3',
         'tox==2.3.1'
