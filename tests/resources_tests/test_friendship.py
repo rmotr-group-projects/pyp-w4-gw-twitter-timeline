@@ -7,6 +7,7 @@ class CreateFriendshipTestCase(BaseTwitterAPITestCase):
 
     def test_follow_user(self):
         # Preconditions
+        self.db.followers.remove({})
         headers = {'Authorization': '$RMOTR$-U2'}
         response = self.client.get('/followers', headers=headers)
         followers = json.loads(response.data.decode(response.charset))
@@ -39,7 +40,7 @@ class CreateFriendshipTestCase(BaseTwitterAPITestCase):
             content_type='application/json')
         self.assertEqual(response.status_code, 400)
 
-    def test_follow_not_authenticated(self):
+    def test_follow_not_authenticated(self):#passed
         data = {'username': 'testuser2'}
         headers = {'Authorization': 'foobar'}
         response = self.client.post(
@@ -49,7 +50,7 @@ class CreateFriendshipTestCase(BaseTwitterAPITestCase):
             content_type='application/json')
         self.assertEqual(response.status_code, 401)
 
-    def test_follow_missing_username(self):
+    def test_follow_missing_username(self):#passed
         headers = {'Authorization': '$RMOTR$-U1'}
         response = self.client.post(
             '/friendship',
@@ -58,7 +59,7 @@ class CreateFriendshipTestCase(BaseTwitterAPITestCase):
             content_type='application/json')
         self.assertEqual(response.status_code, 400)
 
-    def test_follow_missing_access_token(self):
+    def test_follow_missing_access_token(self):#passed
         data = {'username': 'testuser2'}
         response = self.client.post(
             '/friendship',
@@ -72,7 +73,7 @@ class DeleteFriendshipTestCase(BaseTwitterAPITestCase):
 
     def setUp(self):
         super(DeleteFriendshipTestCase, self).setUp()
-
+        self.db.followers.remove({})
         headers = {'Authorization': '$RMOTR$-U1'}
         self.client.post(
             '/friendship',
@@ -87,7 +88,7 @@ class DeleteFriendshipTestCase(BaseTwitterAPITestCase):
         headers = {'Authorization': '$RMOTR$-U2'}
         response = self.client.get('/followers', headers=headers)
         followers = json.loads(response.data.decode(response.charset))
-        expected = [{'username': 'testuser1', 'uri': '/profile/testuser1'}]
+        expected = [{'username': u'testuser1', 'uri': u'/profile/testuser1'}]
         self.assertEqual(followers, expected)
 
         # testuser1 unfollows testuser2

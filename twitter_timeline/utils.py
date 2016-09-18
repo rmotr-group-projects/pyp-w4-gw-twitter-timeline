@@ -33,6 +33,12 @@ def auth_only(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
         # implement your logic here
+        if not 'Authorization' in request.headers:
+            abort(401)
+        auths = g.db.auth.find({"access_token": request.headers.get('Authorization')})
+        if not list(auths):
+            abort(401)
+
         return f(*args, **kwargs)
     return decorated_function
 
@@ -41,5 +47,7 @@ def json_only(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
         # implement your logic here
+        if not request.json:
+            abort(400)
         return f(*args, **kwargs)
     return decorated_function

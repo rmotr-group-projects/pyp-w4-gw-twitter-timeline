@@ -7,7 +7,7 @@ class TimelineResourceTestCase(BaseTwitterAPITestCase):
 
     def setUp(self):
         super(TimelineResourceTestCase, self).setUp()
-
+        self.db.followers.remove({})
         headers = {'Authorization': '$RMOTR$-U1'}
         self.client.post(
             '/friendship',
@@ -23,25 +23,25 @@ class TimelineResourceTestCase(BaseTwitterAPITestCase):
         self.assertEqual(response.status_code, 200)
         expected = [
             {
-                'created': '2016-06-11T13:00:10',
-                'id': '575b5d00ab63bca12dc5c887',
-                'text': 'Tweet 3 testuser2',
-                'uri': '/tweet/575b5d00ab63bca12dc5c887',
-                'user_id': '575b5c2bab63bca09af707a4'
+                u'text': u'Tweet 3 testuser2',
+                u'uri': u'/tweet/575b5d00ab63bca12dc5c887',
+                u'user_id': u'575b5c2bab63bca09af707a4',
+                u'id': u'575b5d00ab63bca12dc5c887',
+                u'created': u'2016-06-11 13:00:10'
             },
             {
-                'created': '2016-06-11T13:00:05',
-                'id': '575b5d00ab63bca12dc5c886',
-                'text': 'Tweet 2 testuser2',
-                'uri': '/tweet/575b5d00ab63bca12dc5c886',
-                'user_id': '575b5c2bab63bca09af707a4'
+                u'text': u'Tweet 2 testuser2',
+                u'uri': u'/tweet/575b5d00ab63bca12dc5c886',
+                u'user_id': u'575b5c2bab63bca09af707a4',
+                u'id': u'575b5d00ab63bca12dc5c886',
+                u'created': u'2016-06-11 13:00:05'
             },
             {
-                'created': '2016-06-11T13:00:00',
-                'id': '575b5d00ab63bca12dc5c885',
-                'text': 'Tweet 1 testuser2',
-                'uri': '/tweet/575b5d00ab63bca12dc5c885',
-                'user_id': '575b5c2bab63bca09af707a4'
+                u'text': u'Tweet 1 testuser2',
+                u'uri': u'/tweet/575b5d00ab63bca12dc5c885',
+                u'user_id': u'575b5c2bab63bca09af707a4',
+                u'id': u'575b5d00ab63bca12dc5c885',
+                u'created': u'2016-06-11 13:00:00'
             }
         ]
         self.assertEqual(
@@ -62,32 +62,31 @@ class TimelineResourceTestCase(BaseTwitterAPITestCase):
         self.assertEqual(response.status_code, 200)
         expected = [
             {
-                'created': '2016-06-11T13:00:10',
-                'id': '575b5d00ab63bca12dc5c887',
-                'text': 'Tweet 3 testuser2',
-                'uri': '/tweet/575b5d00ab63bca12dc5c887',
-                'user_id': '575b5c2bab63bca09af707a4'
+                u'text': u'Tweet 3 testuser2',
+                u'uri': u'/tweet/575b5d00ab63bca12dc5c887',
+                u'user_id': u'575b5c2bab63bca09af707a4', u'id': u'575b5d00ab63bca12dc5c887',
+                u'created': u'2016-06-11 13:00:10'
             },
             {
-                'created': '2016-06-11T13:00:07',
-                'id': '575b5d00ab63bca12dc5c888',
-                'text': 'Tweet 1 testuser3',
-                'uri': '/tweet/575b5d00ab63bca12dc5c888',
-                'user_id': '575b5c2bab63bca09af707a3'
+                u'text': u'Tweet 1 testuser3',
+                u'uri': u'/tweet/575b5d00ab63bca12dc5c888',
+                u'user_id': u'575b5c2bab63bca09af707a3',
+                u'id': u'575b5d00ab63bca12dc5c888',
+                u'created': u'2016-06-11 13:00:07'
             },
             {
-                'created': '2016-06-11T13:00:05',
-                'id': '575b5d00ab63bca12dc5c886',
-                'text': 'Tweet 2 testuser2',
-                'uri': '/tweet/575b5d00ab63bca12dc5c886',
-                'user_id': '575b5c2bab63bca09af707a4'
+                u'text': u'Tweet 2 testuser2',
+                u'uri': u'/tweet/575b5d00ab63bca12dc5c886',
+                u'user_id': u'575b5c2bab63bca09af707a4',
+                u'id': u'575b5d00ab63bca12dc5c886',
+                u'created': u'2016-06-11 13:00:05'
             },
             {
-                'created': '2016-06-11T13:00:00',
-                'id': '575b5d00ab63bca12dc5c885',
-                'text': 'Tweet 1 testuser2',
-                'uri': '/tweet/575b5d00ab63bca12dc5c885',
-                'user_id': '575b5c2bab63bca09af707a4'
+                u'text': u'Tweet 1 testuser2',
+                u'uri': u'/tweet/575b5d00ab63bca12dc5c885',
+                u'user_id': u'575b5c2bab63bca09af707a4',
+                u'id': u'575b5d00ab63bca12dc5c885',
+                u'created': u'2016-06-11 13:00:00'
             }
         ]
         self.assertEqual(
