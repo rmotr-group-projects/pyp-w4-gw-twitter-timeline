@@ -26,19 +26,61 @@ def before_request():
 @json_only
 @auth_only
 def friendship(user_id):
-    pass
+    if 'username' not in request.json:
+        abort(400), 'Missing "username" in payload'
+
+    target_user = g.db.users.find_one({'username': request.json['username']})
+    if not target_user:
+        abort(400), 'Trying to follow an invalid username'
+
+    current_user = g.db.users.find_one({'_id': ObjectId(user_id)})
+    if not current_user:
+        abort(404)  # should not happen as we are authenticated
+
+    query = {
+        'user': current_user['_id'],
+        'user_username': current_user['username'],
+        'follows': target_user['_id'],
+        'follows_username': target_user['username'],
+    }
+    if request.method == 'POST':
+        # create friendship
+        g.db.friendships.insert(query)
+        return "", 201
+    else:
+        # delete friendship
+        g.db.friendships.delete_one(query)
+        return "", 204
 
 
 @app.route('/followers', methods=['GET'])
 @auth_only
 def followers(user_id):
-    pass
+    data = [{'username': f['user_username'],
+             'uri': '/profile/{}'.format(f['user_username'])}
+            for f in g.db.friendships.find({'follows': ObjectId(user_id)})]
+    return json.dumps(data), 200, {'Content-Type': JSON_MIME_TYPE}
 
 
 @app.route('/timeline', methods=['GET'])
 @auth_only
 def timeline(user_id):
-    pass
+    if not g.db.users.find_one({'_id': ObjectId(user_id)}):
+        abort(404)
+
+    following = [f['follows'] for f in g.db.friendships.find({'user': ObjectId(user_id)})]
+
+    tweets = []
+    cursor = g.db.tweets.find({'user_id': {'$in': following}}).sort('created', -1)
+    for tweet in cursor:
+        tweets.append({
+            'id': str(tweet['_id']),
+            'user_id': str(tweet['user_id']),
+            'created': python_date_to_json_str(tweet['created']),
+            'text': tweet['content'],
+            'uri': '/tweet/{}'.format(tweet['_id']),
+        })
+    return json.dumps(tweets), 200, {'Content-Type': JSON_MIME_TYPE}
 
 
 @app.errorhandler(404)
