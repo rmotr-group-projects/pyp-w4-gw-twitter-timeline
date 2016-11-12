@@ -40,14 +40,13 @@ def auth_only(f):
         except:
             abort(401)
         return f(user['user_id'], *args, **kwargs)
-
     return decorated_function
 
 
 def json_only(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        if not request.is_json:
+        if request.content_type != JSON_MIME_TYPE:
             abort(400)
         return f(*args, **kwargs)
 
