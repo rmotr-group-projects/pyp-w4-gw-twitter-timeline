@@ -34,7 +34,8 @@ def auth_only(f):
     def decorated_function(*args, **kwargs):
         if 'Authorization' not in request.headers:
             abort(401)
-        auth = g.db.auth.find_one({'access_token': request.headers['Authorization']})
+        auth = g.db.auth.find_one(
+            {'access_token': request.headers['Authorization']})
         if not auth:
             abort(401)
         kwargs['user_id'] = str(auth['user_id'])
