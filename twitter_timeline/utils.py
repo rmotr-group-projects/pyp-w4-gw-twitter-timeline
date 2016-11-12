@@ -40,6 +40,7 @@ def auth_only(f):
         except:
             abort(401)
         return f(user['user_id'], *args, **kwargs)
+
     return decorated_function
 
 
@@ -49,4 +50,5 @@ def json_only(f):
         if not request.is_json:
             abort(400)
         return f(*args, **kwargs)
+
     return decorated_function

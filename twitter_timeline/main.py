@@ -50,12 +50,11 @@ def friendship(user_id):
 @app.route('/followers', methods=['GET'])
 @auth_only
 def followers(user_id):
-
     followers = g.db.friendships.find({'friend_id': user_id})
 
     followers_list = []
     for follower in followers:
-        f_details = g.db.users.find_one({'_id':follower['user_id']})
+        f_details = g.db.users.find_one({'_id': follower['user_id']})
         followers_list.append({'username': f_details['username'],
                                'uri': '/profile/{}'.format(f_details['username'])})
 
@@ -65,16 +64,14 @@ def followers(user_id):
 @app.route('/timeline', methods=['GET'])
 @auth_only
 def timeline(user_id):
-    #print(user_id)
-
     friends_query = g.db.friendships.find({'user_id': user_id})
     friends = [{'user_id': f['friend_id']} for f in friends_query]
 
     if len(friends) == 0:
         return jsonify([]), 200
 
-    tweets = g.db.tweets.find({"$or": friends}).sort('created',DESCENDING)
-    #print(t for t in tweets)
+    tweets = g.db.tweets.find({"$or": friends}).sort('created', DESCENDING)
+
     tweets_list = []
     for t in tweets:
         tweets_list.append({
@@ -84,8 +81,6 @@ def timeline(user_id):
             'uri': '/tweet/{}'.format(str(t['_id'])),
             'user_id': str(t['user_id'])
         })
-
-    #print(tweets_list)
 
     return jsonify(tweets_list), 200
 
