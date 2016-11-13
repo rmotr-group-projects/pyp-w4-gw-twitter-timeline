@@ -30,54 +30,44 @@ def friendship(user_id):
     if not json_data.get('username', None):
         abort(400)
     username = json_data['username']
-    user_followed = g.db.users.find_one({'username': username})
-    if not user_followed:
+    user_to_follow = g.db.users.find_one({'username': username})
+    if not user_to_follow:
         abort(400)
     else:
-        user_followed_id = user_followed['_id']
-    followed = g.db.friendships.find_one({'user': ObjectId(user_id), 'followed': user_followed_id})
+        user_followed_id = user_to_follow['_id']
+
+    # before inserting or deleting a friendship, first check that it exists. if it doesn't, abort!
+    friendship = g.db.friendships.find_one({'user_obj_id': ObjectId(user_id), 'followed_obj_id': user_followed_id})
 
     if request.method == 'POST':
-        if not followed:
-            g.db.friendships.insert_one({'user': ObjectId(user_id), 'followed': user_followed_id})
+        if friendship:
+            abort(400)
+        else:
+            g.db.friendships.insert({'user_obj_id': ObjectId(user_id), 'followed_obj_id': user_followed_id})
             return '', 201
-    
+
     if request.method == 'DELETE':
-        
-        # https://docs.mongodb.com/v3.2/reference/method/db.collection.deleteOne/#db.collection.deleteOne
-        # result = g.db.friendships.deleteOne({}) # include our filtration criteria here
-        # find the friendship, check it exists
-        # return '', 400 # if it doesn't exist
-        # delete the friendship
-        g.db.friendships.delete_many({'user': user_id, 'followed': user_followed})
-        return '', 204 
-    
+        if friendship:
+            g.db.friendships.delete_many({'user_obj_id': ObjectId(user_id), 'followed_obj_id': user_followed_id})
+            return '', 204
+        else:
+            abort(400)
+
 
 
 @app.route('/followers', methods=['GET'])
 @auth_only
 def followers(user_id):
-    # friendship {follower_id: user_id, followed_username: request.data['username']}
-    # when you get followers, it should be a list with dictionaries containing the friendship
-    # [{'username': 'testuser1', 'uri': '/profile/testuser1'}]
-    # import ipdb; ipdb.set_trace()
-    # print(user_id)
-    # user = g.db.users.find({'user_id': user_id})
-    # print(user)
-    # https://docs.mongodb.com/v3.2/reference/method/db.collection.find/
-    # g.db.friendships.insert_one({'user': user_id, 'followed': user_followed_id})
-    follower_list = g.db.friendships.find({ 'followed': ObjectId(user_id) }) #  # get a list of the ppl following the user
-    # print(follower_list)
+    follower_list = g.db.friendships.find({ 'followed_obj_id': ObjectId(user_id) })
     response = []
 
-    # should work once we get friendships    
     for follower in follower_list:
-        import ipdb; ipdb.set_trace()
+        username = get_username(follower['user_obj_id'])
         response.append({
-            'username': 'something',
-            'uri': '/profile/{}'.format('something')
+            'username': username,
+            'uri': '/profile/{}'.format(username)
         })
-        
+
     return jsonify(response)
 
 
@@ -86,13 +76,14 @@ def followers(user_id):
 def timeline(user_id):
     # user_ids_followed = g.db.friendships.find({ follower_id: user_id })
     # friendship {follower_id: user_id, followed_username: request.data['username']}
-    # tweets = g.db.tweets({}) 
-    # get the tweets of all the people the user is following 
+    tweets = []
+    #  g.db.tweets({})
+    # get the tweets of all the people the user is following
     # (no need to get user's own tweets unlike actual twitter)
     # sort tweets by latest first https://docs.mongodb.com/v3.2/reference/method/cursor.sort/
 
     response = []
-    
+
     # should work once we figure the rest out
     # for tweet in tweets:
     #     response.append({
@@ -103,4 +94,10 @@ def timeline(user_id):
     #         'user_id': str(tweet['user_id')
     #     })
     return jsonify(response)
-    
+
+def get_username(obj_id):
+    user = g.db.users.find({'_id': obj_id}, {'username': 1}).next()
+    username = user['username']
+    # without .next(), user is a cursor. with .next(), user is a dictionary like below
+    # {u'username': u'testuser2', u'_id': ObjectId('575b5c2bab63bca09af707a4')}
+    return username
