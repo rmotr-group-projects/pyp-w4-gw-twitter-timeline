@@ -1,6 +1,6 @@
 import json
 
-from pymongo import MongoClient
+from pymongo import MongoClient, DESCENDING
 from bson.objectid import ObjectId
 from flask import Flask, g, jsonify, abort
 
@@ -54,7 +54,6 @@ def friendship(user_id):
             abort(400)
 
 
-
 @app.route('/followers', methods=['GET'])
 @auth_only
 def followers(user_id):
@@ -62,7 +61,7 @@ def followers(user_id):
     response = []
 
     for follower in follower_list:
-        username = get_username(follower['user_obj_id'])
+        username = get_user_details(follower['user_obj_id'], 'username')
         response.append({
             'username': username,
             'uri': '/profile/{}'.format(username)
@@ -74,30 +73,31 @@ def followers(user_id):
 @app.route('/timeline', methods=['GET'])
 @auth_only
 def timeline(user_id):
-    # user_ids_followed = g.db.friendships.find({ follower_id: user_id })
-    # friendship {follower_id: user_id, followed_username: request.data['username']}
-    tweets = []
-    #  g.db.tweets({})
-    # get the tweets of all the people the user is following
-    # (no need to get user's own tweets unlike actual twitter)
-    # sort tweets by latest first https://docs.mongodb.com/v3.2/reference/method/cursor.sort/
+    friendships = g.db.friendships.find({'user_obj_id': ObjectId(user_id)})
 
+    if not friendships:
+        return jsonify([])
+
+    user_ids_followed = [ f['followed_obj_id'] for f in friendships]
+    tweets = g.db.tweets.find({'user_id': {'$in': user_ids_followed}}).sort('created', DESCENDING)
     response = []
 
-    # should work once we figure the rest out
-    # for tweet in tweets:
-    #     response.append({
-    #         'created': python_date_to_json_string(tweet['created']),
-    #         'id': str(tweet['_id'],
-    #         'text': tweet['content'],
-    #         'uri': '/tweet/{}'.format('TBD'),
-    #         'user_id': str(tweet['user_id')
-    #     })
+    for tweet in tweets:
+        tweet_id = str(tweet['_id'])
+        poster_id = str(get_user_details(tweet['user_id'], '_id'))
+
+        response.append({
+            'created': python_date_to_json_str(tweet['created']),
+            'id': tweet_id,
+            'text': tweet['content'],
+            'uri': '/tweet/{}'.format(tweet_id),
+            'user_id': poster_id
+        })
     return jsonify(response)
 
-def get_username(obj_id):
+def get_user_details(obj_id, field):
     user = g.db.users.find({'_id': obj_id}, {'username': 1}).next()
-    username = user['username']
+    detail = user[field]
     # without .next(), user is a cursor. with .next(), user is a dictionary like below
     # {u'username': u'testuser2', u'_id': ObjectId('575b5c2bab63bca09af707a4')}
-    return username
+    return detail
