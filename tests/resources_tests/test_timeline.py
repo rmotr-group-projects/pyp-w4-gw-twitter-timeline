@@ -4,6 +4,8 @@ from ..test_base import BaseTwitterAPITestCase
 
 
 class TimelineResourceTestCase(BaseTwitterAPITestCase):
+    
+    maxDiff = None
 
     def setUp(self):
         super(TimelineResourceTestCase, self).setUp()
