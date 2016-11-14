@@ -60,7 +60,7 @@ class TimelineResourceTestCase(BaseTwitterAPITestCase):
 
         # Preconditions
         friendship = self.db.friendships.find_one({'user_id': self.user_1_id})
-        self.assertEqual(friendship['friends'], 2)
+        self.assertEqual(len(friendship['friends']), 2)
 
         response = self.client.get('/timeline',
                                    headers=headers)
