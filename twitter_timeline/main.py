@@ -11,7 +11,7 @@ JSON_MIME_TYPE = 'application/json'
 
 
 def connect_db(db_name):
-    mongo = MongoClient(settings.FULL_MONGO_HOST)
+    mongo = MongoClient(settings.FULL_MONGO_HOST, j=True)
     return mongo[db_name]
 
 
@@ -34,7 +34,7 @@ def friendship(user_id):
         new_id = new_user['_id']
         g.db.friendships.update_one({'user_id': user_id}, {'$addToSet':{'friends': new_id}}, upsert = True)
         return '', 201
-    
+
     elif request.method == 'DELETE':
         data = request.get_json()
         if 'username' not in data:
@@ -45,7 +45,7 @@ def friendship(user_id):
         doomed_id = doomed_user['_id']
         g.db.friendships.update_one({'user_id': user_id}, {'$pull':{'friends': doomed_id}})
         return '', 204
-    
+
 @app.route('/followers', methods=['GET'])
 @auth_only
 def followers(user_id):
@@ -59,6 +59,7 @@ def followers(user_id):
 @app.route('/timeline', methods=['GET'])
 @auth_only
 def timeline(user_id):
+    # import ipdb; ipdb.set_trace()
     friend_doc = g.db.friendships.find_one({'user_id': user_id})
     friends = friend_doc['friends'] if friend_doc else []
     tweets = g.db.tweets.find({'user_id': {'$in': friends}}).sort('created', -1)
@@ -68,9 +69,9 @@ def timeline(user_id):
         'text': tweet['content'],
         'uri': '/tweet/{}'.format(str(tweet['_id'])),
         'user_id': str(tweet['user_id'])} for tweet in tweets]
-        
+
     return jsonify(feed)
-    
+
 @app.errorhandler(404)
 def not_found(e):
     return '', 404
