@@ -5,6 +5,8 @@ from ..test_base import BaseTwitterAPITestCase
 
 class TimelineResourceTestCase(BaseTwitterAPITestCase):
 
+    maxDiff = None
+
     def setUp(self):
         super(TimelineResourceTestCase, self).setUp()
 
@@ -47,7 +49,6 @@ class TimelineResourceTestCase(BaseTwitterAPITestCase):
         self.assertEqual(
             json.loads(response.data.decode(response.charset)), expected)
 
-
     def test_user_timeline_many_followers(self):
         # testuser1 follows testuser3
         headers = {'Authorization': '$RMOTR$-U1'}
@@ -56,6 +57,10 @@ class TimelineResourceTestCase(BaseTwitterAPITestCase):
             data=json.dumps({'username': 'testuser3'}),
             headers=headers,
             content_type='application/json')
+
+        # Preconditions
+        friendship = self.db.friendships.find_one({'user_id': self.user_1_id})
+        self.assertEqual(len(friendship['friends']), 2)
 
         response = self.client.get('/timeline',
                                    headers=headers)

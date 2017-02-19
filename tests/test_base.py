@@ -15,7 +15,7 @@ class BaseTwitterAPITestCase(unittest.TestCase):
         app.config['TESTING'] = True
         app.config['SECRET_KEY'] = 'testing secret key'
 
-        self.mongo = MongoClient(settings.FULL_MONGO_HOST)
+        self.mongo = MongoClient(settings.FULL_MONGO_HOST, j=True)
         self.db = self.mongo[settings.DATABASE_NAME]
 
         self.clean_collections()
