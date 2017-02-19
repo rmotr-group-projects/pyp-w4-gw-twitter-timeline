@@ -38,8 +38,7 @@ def auth_only(f):
             {'access_token': request.headers['Authorization']})
         if not auth:
             abort(401)
-        kwargs['user_id'] = str(auth['user_id'])
-        return f(*args, **kwargs)
+        return f(*args, user_id = auth['user_id'], **kwargs)
     return decorated_function
 
 
