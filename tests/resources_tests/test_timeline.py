@@ -6,6 +6,9 @@ from ..test_base import BaseTwitterAPITestCase
 class TimelineResourceTestCase(BaseTwitterAPITestCase):
 
     def setUp(self):
+        
+        self.maxDiff = None
+        
         super(TimelineResourceTestCase, self).setUp()
 
         headers = {'Authorization': '$RMOTR$-U1'}
@@ -23,21 +26,21 @@ class TimelineResourceTestCase(BaseTwitterAPITestCase):
         self.assertEqual(response.status_code, 200)
         expected = [
             {
-                'created': '2016-06-11T13:00:10',
+                'created': '2016-06-11 13:00:10',
                 'id': '575b5d00ab63bca12dc5c887',
                 'text': 'Tweet 3 testuser2',
                 'uri': '/tweet/575b5d00ab63bca12dc5c887',
                 'user_id': '575b5c2bab63bca09af707a4'
             },
             {
-                'created': '2016-06-11T13:00:05',
+                'created': '2016-06-11 13:00:05',
                 'id': '575b5d00ab63bca12dc5c886',
                 'text': 'Tweet 2 testuser2',
                 'uri': '/tweet/575b5d00ab63bca12dc5c886',
                 'user_id': '575b5c2bab63bca09af707a4'
             },
             {
-                'created': '2016-06-11T13:00:00',
+                'created': '2016-06-11 13:00:00',
                 'id': '575b5d00ab63bca12dc5c885',
                 'text': 'Tweet 1 testuser2',
                 'uri': '/tweet/575b5d00ab63bca12dc5c885',
@@ -62,28 +65,28 @@ class TimelineResourceTestCase(BaseTwitterAPITestCase):
         self.assertEqual(response.status_code, 200)
         expected = [
             {
-                'created': '2016-06-11T13:00:10',
+                'created': '2016-06-11 13:00:10',
                 'id': '575b5d00ab63bca12dc5c887',
                 'text': 'Tweet 3 testuser2',
                 'uri': '/tweet/575b5d00ab63bca12dc5c887',
                 'user_id': '575b5c2bab63bca09af707a4'
             },
             {
-                'created': '2016-06-11T13:00:07',
+                'created': '2016-06-11 13:00:07',
                 'id': '575b5d00ab63bca12dc5c888',
                 'text': 'Tweet 1 testuser3',
                 'uri': '/tweet/575b5d00ab63bca12dc5c888',
                 'user_id': '575b5c2bab63bca09af707a3'
             },
             {
-                'created': '2016-06-11T13:00:05',
+                'created': '2016-06-11 13:00:05',
                 'id': '575b5d00ab63bca12dc5c886',
                 'text': 'Tweet 2 testuser2',
                 'uri': '/tweet/575b5d00ab63bca12dc5c886',
                 'user_id': '575b5c2bab63bca09af707a4'
             },
             {
-                'created': '2016-06-11T13:00:00',
+                'created': '2016-06-11 13:00:00',
                 'id': '575b5d00ab63bca12dc5c885',
                 'text': 'Tweet 1 testuser2',
                 'uri': '/tweet/575b5d00ab63bca12dc5c885',
