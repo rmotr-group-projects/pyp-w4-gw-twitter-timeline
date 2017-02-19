@@ -1,11 +1,13 @@
 import json
 
-from pymongo import MongoClient
+from pymongo import MongoClient, DESCENDING
 from bson.objectid import ObjectId
-from flask import Flask, g
+from flask import Flask, g, jsonify
 
 from twitter_timeline import settings
 from twitter_timeline.utils import *
+
+from datetime import datetime
 
 app = Flask(__name__)
 
@@ -26,19 +28,61 @@ def before_request():
 @json_only
 @auth_only
 def friendship(user_id):
-    pass
+    try:
+        friend = request.get_json()['username']
+    except:
+        abort(400)
+
+    friend_id = g.db.users.find_one({'username': friend})
+
+    if friend_id is None:
+        abort(400)
+
+    if request.method == 'POST':
+        g.db.friendships.insert({'user_id': user_id, 'friend_id': friend_id['_id']})
+        return '', 201
+
+    if request.method == 'DELETE':
+        g.db.friendships.delete_one({'friend_id': friend_id['_id']})
+        return '', 204
 
 
 @app.route('/followers', methods=['GET'])
 @auth_only
 def followers(user_id):
-    pass
+    followers = g.db.friendships.find({'friend_id': user_id})
+
+    followers_list = []
+    for follower in followers:
+        f_details = g.db.users.find_one({'_id': follower['user_id']})
+        followers_list.append({'username': f_details['username'],
+                               'uri': '/profile/{}'.format(f_details['username'])})
+
+    return jsonify(followers_list)
 
 
 @app.route('/timeline', methods=['GET'])
 @auth_only
 def timeline(user_id):
-    pass
+    friends_query = g.db.friendships.find({'user_id': user_id})
+    friends = [{'user_id': f['friend_id']} for f in friends_query]
+
+    if len(friends) == 0:
+        return jsonify([]), 200
+
+    tweets = g.db.tweets.find({"$or": friends}).sort('created', DESCENDING)
+
+    tweets_list = []
+    for t in tweets:
+        tweets_list.append({
+            'created': datetime.strftime(t['created'], '%Y-%m-%dT%H:%M:%S'),
+            'id': str(t['_id']),
+            'text': t['content'],
+            'uri': '/tweet/{}'.format(str(t['_id'])),
+            'user_id': str(t['user_id'])
+        })
+
+    return jsonify(tweets_list), 200
 
 
 @app.errorhandler(404)
