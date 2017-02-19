@@ -3,6 +3,8 @@ import string
 import random
 from datetime import datetime
 from functools import wraps
+from bson.objectid import ObjectId
+
 
 from flask import request, g, abort
 
@@ -50,3 +52,7 @@ def json_only(f):
             abort(400)
         return f(*args, **kwargs)
     return decorated_function
+
+def get_user_name(user_id):
+    user = g.db.users.find_one({'_id': ObjectId(user_id)})
+    return user['username'] if user else None
